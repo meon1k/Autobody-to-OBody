@@ -91,7 +91,7 @@ for line in open(morphs_ini_path):
         obody_conversion.npc_form_id[plugin_name][form_id] = bodies
 
 with open(obody_json_path, 'w') as json_file:
-    json_file.write(obody_conversion.to_json())
+    json_file.write(obody_conversion.to_json(indent=4))
 print("OBody JSON saved in:", obody_json_path)
 
 if output_csv == True:
