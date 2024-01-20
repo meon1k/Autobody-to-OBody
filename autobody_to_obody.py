@@ -4,14 +4,18 @@ import sys
 import configparser
 from data_structure import obody
 
-DEFAULT_OBODY_JSON_OUTPUT_PATH = r"output\OBody_presetDistributionConfig.json"
-DEFAULT_STATISTIC_OUTPUT_PATH = r"output\statistic.csv"
+DEFAULT_OBODY_JSON_OUTPUT_PATH = r"OBody_presetDistributionConfig.json"
+DEFAULT_STATISTICS_OUTPUT_PATH = r"statistics.csv"
+AUTOBODY_CONFIG = r"morphs.ini"
+
 current_path = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, "frozen", False): # if bundled in a one-file executable
+    current_path = os.path.dirname(sys.executable)
 
 input_morphs_ini_path = ""
 output_obody_json_path = ""
 output_csv = False
-output_statistic_csv_path = ""
+output_statistics_csv_path = ""
 
 config_path = os.path.join(current_path, "config.ini")
 if os.path.exists(config_path):
@@ -20,31 +24,39 @@ if os.path.exists(config_path):
     input_morphs_ini_path = config["CONFIGS"]["input_morphs_ini_path"]
     output_obody_json_path = config["CONFIGS"]["output_obody_json_path"]
     output_csv = bool(config["CONFIGS"].get("output_csv", False))
-    output_statistic_csv_path = config["CONFIGS"]["output_statistic_csv_path"]
+    output_statistics_csv_path = config["CONFIGS"]["output_statistic_csv_path"]
 
-def usePath(file_name, file_path="", file_required=False):
+def use_path(file_name, file_path="", file_required=False):
     if file_path == "":
         local_file = os.path.join(current_path, file_name)
         if file_required and os.path.exists(local_file) is False:
+            print(local_file)
+            print("file_required=",file_required)
             error = file_name + " is required and cannot be found! The script seems to be in a wrong directory"
-            sys.exit(error)
+            safe_exit(error)
         else:
             return local_file
     else:
         if file_required and os.path.exists(file_path) is False:
-            error = file_name + " is required and cannot be found! Check your options!"
-            sys.exit(error)
+            error = file_name + " is required and cannot be found! Check your config.ini!"
+            safe_exit(error)
         else:
             return file_path
 
-def addData(dictionary, key, value):
+def add_data(dictionary, key, value):
     if key not in dictionary:
         dictionary[key] = {}
     dictionary[key] = value
+    
+def safe_exit(error = None):
+    if error is not None:
+        print(error)
+    os.system('pause')
+    exit()
 
-morphs_ini_path = usePath("morphs.ini", input_morphs_ini_path, True)
-obody_json_path = usePath(DEFAULT_OBODY_JSON_OUTPUT_PATH, output_obody_json_path)
-statistic_csv_path = usePath(DEFAULT_STATISTIC_OUTPUT_PATH, output_statistic_csv_path)
+morphs_ini_path = use_path(AUTOBODY_CONFIG, input_morphs_ini_path, True)
+obody_json_path = use_path(DEFAULT_OBODY_JSON_OUTPUT_PATH, output_obody_json_path)
+statistic_csv_path = use_path(DEFAULT_STATISTICS_OUTPUT_PATH, output_statistics_csv_path)
 
 body_statistics = dict()
 obody_conversion = obody.OBody()
@@ -66,15 +78,15 @@ for line in open(morphs_ini_path):
         # Obody conversion
         if race_faction == 0:
             if sex == "Female":
-                addData(obody_conversion.race_female, group, bodies)
+                add_data(obody_conversion.race_female, group, bodies)
             elif sex == "Male":
-                addData(obody_conversion.race_male, group, bodies)
+                add_data(obody_conversion.race_male, group, bodies)
             continue
         if race_faction == 1:
             if sex == "Female":
-                addData(obody_conversion.faction_female, group, bodies)
+                add_data(obody_conversion.faction_female, group, bodies)
             elif sex == "Male":
-                addData(obody_conversion.faction_male, group, bodies)
+                add_data(obody_conversion.faction_male, group, bodies)
             continue
         continue
     else: # NPC specific rules
@@ -99,4 +111,6 @@ if output_csv == True:
     with open(statistic_csv_path, 'w', newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerows(sorted_statistics)
-    print("bodyslide preset statistic saved in:", statistic_csv_path)
+    print("bodyslide preset statistics saved in:", statistic_csv_path)
+    
+safe_exit()
