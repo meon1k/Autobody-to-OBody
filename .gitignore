@@ -2,3 +2,4 @@ dist/
 build/
 autobody_to_obody.spec
 data_structure/__pycache__/
+statistics.csv
