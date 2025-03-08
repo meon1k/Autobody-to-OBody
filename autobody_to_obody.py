@@ -84,7 +84,7 @@ def safe_exit(error = None):
     if error is not None:
         print(error)
     os.system('pause')
-    exit()
+    sys.exit()
 
 morphs_ini_path = use_path(AUTOBODY_CONFIG, input_morphs_ini_path, True)
 obody_json_path = use_path(DEFAULT_OBODY_JSON_OUTPUT_PATH, output_obody_json_path)
